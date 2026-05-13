@@ -3,7 +3,7 @@ package src.main.tictactoe;
 public class Board {
     private Cell[][] board;
 
-    int size;
+    private int size;
 
     public Board(int size) {
         this.size = size;
@@ -16,12 +16,16 @@ public class Board {
         }
     }
 
-    private boolean checkWinner(int row, int col, PlayingSymbol symbol) {
+    public int getSize() {
+        return size;
+    }
+
+    private boolean checkWinner(int row, int col, Symbol symbol) {
        // Row Match
         boolean rowMatch = true;
 
         for(int j = 0; j<size; j++) {
-            if(board[row][j] == null || !(board[row][j].getSymbol().getSymbol() == symbol.getSymbol())) {
+            if(board[row][j].getSymbol() == null || !(board[row][j].getSymbol().equals(symbol))) {
                 rowMatch = false;
                 break;
             }
@@ -32,8 +36,7 @@ public class Board {
         boolean colMatch = true;
 
         for(int i = 0; i<size; i++) {
-            if(board[i][col] == null || !(board[i][col].getSymbol().getSymbol() == symbol.getSymbol())) {
-                System.out.println("Column does not match");
+            if(board[i][col].getSymbol() == null || !(board[i][col].getSymbol().equals(symbol))) {
                 colMatch = false;
                 break;
             }
@@ -44,7 +47,7 @@ public class Board {
         if(row == col) {
             boolean diagonalMatch = true;
             for(int i = 0; i < size; i++) {
-                if(board[i][i].getSymbol() == null || !(board[i][i].getSymbol().getSymbol()==symbol.getSymbol())) {
+                if(board[i][i].getSymbol() == null || !(board[i][i].getSymbol().equals(symbol))) {
                     diagonalMatch = false;
                     break;
                 }
@@ -58,8 +61,7 @@ public class Board {
         if(row + col == size - 1) {
             boolean antiDiagonalMatch = true;
             for(int i = 0; i < size; i++) {
-                if(board[i][size - 1 - i].getSymbol() == null ||
-                    !(board[i][size - 1 - i].getSymbol().getSymbol()==symbol.getSymbol())) {
+                if(board[i][size - 1 - i].getSymbol() == null || !(board[i][size - 1 - i].getSymbol().equals(symbol))) {
                     antiDiagonalMatch = false;
                     break;
                 }
@@ -73,23 +75,24 @@ public class Board {
     }
 
     public boolean validateMove(int row, int col) {
-        if(row >= 0 && row <= 2 && col >= 0 && col <= 2) return true;
+        if(row >= 0 && row < size && col >= 0 && col < size && (board[row][col].isEmpty())) return true;
         return false;
     }
 
-    private void printMove() {
+    private void displayBoard() {
         for(int i = 0; i<size; i++) {
             for(int j = 0; j<size; j++) {
-                System.out.print(board[i][j].getSymbol().getSymbol() + " ");
+                System.out.print(board[i][j].getSymbol() == null ? '.' : board[i][j].getSymbol());
+                System.out.print(" ");
             }
             System.out.println();
         }
     }
 
-    public boolean placeMove(int i, int j, PlayingSymbol symbol) {
+    public boolean placeMove(int i, int j, Symbol symbol) {
         board[i][j].setSymbol(symbol);
         System.out.println("Current State of TicTacToe: ");
-        printMove();
+        displayBoard();
 
         if(checkWinner(i, j, symbol)) {
             return true;

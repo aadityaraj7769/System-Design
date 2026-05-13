@@ -13,48 +13,43 @@ public class TicTacToeGame {
     public TicTacToeGame(int size) {
         _board = new Board(size);
         _playerQueue = new ArrayDeque<>();
+        _status = GameStatus.IN_PROGRESS;
     }
 
     public void setPlayer(Player player) {
         _playerQueue.add(player);
     }
 
-    private boolean makeMove(int i, int j, PlayingSymbol symbol) {
+    private boolean makeMove(int i, int j, Symbol symbol) {
        return  _board.placeMove(i, j, symbol);
     }
 
     public void startGame() {
         int count = 0;
         Scanner scanner = new Scanner(System.in);
-        while(true) {
-            System.out.println("Game has started");
+        System.out.println("Game has started");
+        while(_status == GameStatus.IN_PROGRESS) {
             Player player = _playerQueue.poll();
 
-
-            System.out.println("Please Enter the position and symbol");
-            System.out.println("Enter X: ");
+            System.out.println("Please Enter the position");
             int row = scanner.nextInt();
-            System.out.println("Enter Y: ");
             int col = scanner.nextInt();
-            System.out.println("Enter Symbol: ");
-            char sym = scanner.next().charAt(0);
-            PlayingSymbol symbol = new PlayingSymbol();
-            symbol.setSymbol(sym);
-
 
             if(!_board.validateMove(row, col)) {
                 System.out.println("Please enter valid move");
+                _playerQueue.add(player);
                continue;
             }
 
-            if(makeMove(row, col, symbol)) {
+            if(makeMove(row, col, player.getPlayingSymbol())) {
+                System.out.println("WINNER!");
                 System.out.println("Player " + player.getPlayerName() + " Won the Match");
-                return;
+                _status = GameStatus.WINNER;
             }
             count+=1;
-            if(count == 9) {
-                System.out.println("Match Draw");
-                break;
+            if(count == _board.getSize() * _board.getSize()) {
+                System.out.println(_status.DRAW);
+                _status = GameStatus.DRAW;
             }
             _playerQueue.add(player);
         }
