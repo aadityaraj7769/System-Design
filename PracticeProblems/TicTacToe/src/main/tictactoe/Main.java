@@ -8,9 +8,9 @@ public class Main {
         Player player1 = new Player("1", "Aditya", symbol1);
         Player player2 = new Player("2", "Ankit", symbol2);
 
-        TicTacToeGame game = new TicTacToeGame(4);
-        game.setPlayer(player1);
-        game.setPlayer(player2);
+        TicTacToeGame game = new TicTacToeGame(3);
+        game.addPlayer(player1);
+        game.addPlayer(player2);
 
         game.startGame();
     }

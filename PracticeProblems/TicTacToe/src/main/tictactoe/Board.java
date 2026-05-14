@@ -1,13 +1,23 @@
 package src.main.tictactoe;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 public class Board {
     private Cell[][] board;
-
+    private List<WinningStrategy> strategies;
+    private int numberOfCellFilled;
     private int size;
 
     public Board(int size) {
         this.size = size;
         board = new Cell[size][size];
+        numberOfCellFilled = 0;
+        strategies = new ArrayList<>();
+        strategies.add(new RowWinningStrategy());
+        strategies.add(new ColumnWinningStrategy());
+        strategies.add(new DiagonalWinningStrategy());
 
         for(int i = 0; i<size; i++) {
             for(int j = 0; j<size; j++) {
@@ -20,62 +30,29 @@ public class Board {
         return size;
     }
 
+    public Cell getCell(int row, int col) {
+        return board[row][col];
+    }
+
     private boolean checkWinner(int row, int col, Symbol symbol) {
-       // Row Match
-        boolean rowMatch = true;
+       for(WinningStrategy strategy: strategies) {
+           if(strategy.checkWinner(row, col, this, symbol)) {
+               return true;
+           }
+       }
+       return false;
+    }
 
-        for(int j = 0; j<size; j++) {
-            if(board[row][j].getSymbol() == null || !(board[row][j].getSymbol().equals(symbol))) {
-                rowMatch = false;
-                break;
-            }
-        }
-        if(rowMatch) return true;
+    private boolean isWithinBounds(int row, int col) {
+        return row >= 0 && row < size && col >= 0 && col < size;
+    }
 
-        // Column Match
-        boolean colMatch = true;
-
-        for(int i = 0; i<size; i++) {
-            if(board[i][col].getSymbol() == null || !(board[i][col].getSymbol().equals(symbol))) {
-                colMatch = false;
-                break;
-            }
-        }
-        if(colMatch) return true;
-
-        // Check Main Diagonal
-        if(row == col) {
-            boolean diagonalMatch = true;
-            for(int i = 0; i < size; i++) {
-                if(board[i][i].getSymbol() == null || !(board[i][i].getSymbol().equals(symbol))) {
-                    diagonalMatch = false;
-                    break;
-                }
-            }
-            if(diagonalMatch) {
-                return true;
-            }
-        }
-
-        // Check Anti-Diagonal
-        if(row + col == size - 1) {
-            boolean antiDiagonalMatch = true;
-            for(int i = 0; i < size; i++) {
-                if(board[i][size - 1 - i].getSymbol() == null || !(board[i][size - 1 - i].getSymbol().equals(symbol))) {
-                    antiDiagonalMatch = false;
-                    break;
-                }
-            }
-            if(antiDiagonalMatch) {
-                return true;
-            }
-        }
-
-        return false;
+    private boolean isCellEmpty(int row, int col) {
+        return board[row][col].isEmpty();
     }
 
     public boolean validateMove(int row, int col) {
-        if(row >= 0 && row < size && col >= 0 && col < size && (board[row][col].isEmpty())) return true;
+        if(isWithinBounds(row, col) && isCellEmpty(row, col)) return true;
         return false;
     }
 
@@ -89,8 +66,13 @@ public class Board {
         }
     }
 
+    public boolean isBoardFull() {
+        return numberOfCellFilled == (size * size);
+    }
+
     public boolean placeMove(int i, int j, Symbol symbol) {
         board[i][j].setSymbol(symbol);
+        numberOfCellFilled += 1;
         System.out.println("Current State of TicTacToe: ");
         displayBoard();
 

@@ -3,12 +3,12 @@ package src.main.tictactoe;
 public class Player {
   private String playerId;
   private String playerName;
-  private Symbol _playingSymbol;
+  private Symbol playingSymbol;
 
   public Player(String id, String name, Symbol symbol) {
     playerId = id;
     playerName = name;
-    _playingSymbol = symbol;
+    playingSymbol = symbol;
   }
 
   public String getPlayerName() {
@@ -16,7 +16,7 @@ public class Player {
   }
 
   public Symbol getPlayingSymbol() {
-    return _playingSymbol;
+    return playingSymbol;
   }
 
 }
