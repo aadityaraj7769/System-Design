@@ -54,6 +54,23 @@ public class ElevatorCar {
             }
 
             closeDoor();
+            state = (direction == Direction.UP) ? ElevatorState.MOVING_UP : ElevatorState.MOVING_DOWN;
+      }
+
+      private void waitAtFloor() {
+            try {
+                  Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                  e.printStackTrace();
+            }
+      }
+
+      private void moveFloorUp() {
+            currentFloor++;
+      }
+
+      private void moveFloorDown() {
+            currentFloor--;
       }
 
       public void processNextRequest() {
@@ -68,18 +85,19 @@ public class ElevatorCar {
             while (state != ElevatorState.IDLE) {
                   if(state == ElevatorState.MOVING_UP) {
                         direction = Direction.UP;
+
                         while (!upRequests.isEmpty()) {
                               int highestFloor = upRequests.last();
                               System.out.println("Elevator Moving UP from floor " + currentFloor + " to " + highestFloor);
 
                               while(currentFloor < highestFloor) {
-                                    currentFloor++;
+                                    moveFloorUp();
+                                    System.out.println("Elevator is in floor: " + currentFloor);
                                     if(upRequests.contains(currentFloor)) {
                                           upRequests.remove(currentFloor);
-                                          System.out.println("Elevator is in floor: " + currentFloor);
                                           stopAtFloor();
                                     } else {
-                                          System.out.println("Elevator is in floor: " + currentFloor);
+                                          waitAtFloor();
                                     }
                               }
                         }
@@ -92,18 +110,19 @@ public class ElevatorCar {
 
                   else if (state == ElevatorState.MOVING_DOWN) {
                         direction = Direction.DOWN;
+
                         while (!downRequests.isEmpty()) {
                               int lowestFloor = downRequests.first();
                               System.out.println("Elevator Moving Down from floor " + currentFloor + " to " + lowestFloor);
 
                               while(currentFloor > lowestFloor) {
-                                    currentFloor--;
+                                    moveFloorDown();
+                                    System.out.println("Elevator is in floor: " + currentFloor);
                                     if(downRequests.contains(currentFloor)) {
                                           downRequests.remove(currentFloor);
-                                          System.out.println("Elevator is in floor: " + currentFloor);
                                           stopAtFloor();
                                     } else {
-                                          System.out.println("Elevator is in floor: " + currentFloor);
+                                          waitAtFloor();
                                     }
                               }
                         }
