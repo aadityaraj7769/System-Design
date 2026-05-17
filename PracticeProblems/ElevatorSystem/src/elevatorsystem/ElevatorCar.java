@@ -1,5 +1,6 @@
 package src.elevatorsystem;
 
+import com.sun.source.tree.Tree;
 import java.util.TreeSet;
 
 
@@ -13,9 +14,21 @@ public class ElevatorCar {
       public ElevatorCar() {
             currentFloor = 0;
             direction = Direction.UP;
-            state = ElevatorState.IDLE;
+            state = new IdleState();
             upRequests = new TreeSet<>();
             downRequests = new TreeSet<>();
+      }
+
+      public void setState(ElevatorState state) {
+            this.state = state;
+      }
+
+      public TreeSet<Integer> getUpRequests() {
+            return upRequests;
+      }
+
+      public TreeSet<Integer> getDownRequests() {
+            return downRequests;
       }
 
       public void submitInternalRequest(int floor) {
@@ -35,12 +48,10 @@ public class ElevatorCar {
       }
 
       private void openDoor() {
-            state = ElevatorState.DOOR_OPEN;
             System.out.println("Door is opening");
       }
 
       private void closeDoor() {
-            state = ElevatorState.DOOR_CLOSE;
             System.out.println("Door is closing");
       }
 
@@ -54,7 +65,6 @@ public class ElevatorCar {
             }
 
             closeDoor();
-            state = (direction == Direction.UP) ? ElevatorState.MOVING_UP : ElevatorState.MOVING_DOWN;
       }
 
       private void waitAtFloor() {
@@ -73,65 +83,52 @@ public class ElevatorCar {
             currentFloor--;
       }
 
-      public void processNextRequest() {
-            if (state == ElevatorState.IDLE) {
-                  if (!upRequests.isEmpty()) {
-                        state = ElevatorState.MOVING_UP;
-                  } else if (!downRequests.isEmpty()) {
-                        state = ElevatorState.MOVING_DOWN;
+      public void moveUp() {
+            direction = Direction.UP;
+
+            while (!upRequests.isEmpty()) {
+                  int highestFloor = upRequests.last();
+                  System.out.println("Elevator Moving UP from floor " + currentFloor + " to " + highestFloor);
+
+                  while (currentFloor < highestFloor) {
+                        moveFloorUp();
+                        System.out.println("Elevator is in floor: " + currentFloor);
+                        if (upRequests.contains(currentFloor)) {
+                              upRequests.remove(currentFloor);
+                              stopAtFloor();
+                        } else {
+                              upRequests.remove(highestFloor);
+                              waitAtFloor();
+                        }
                   }
             }
+      }
 
-            while (state != ElevatorState.IDLE) {
-                  if(state == ElevatorState.MOVING_UP) {
-                        direction = Direction.UP;
+      public void moveDown() {
+            direction = Direction.DOWN;
 
-                        while (!upRequests.isEmpty()) {
-                              int highestFloor = upRequests.last();
-                              System.out.println("Elevator Moving UP from floor " + currentFloor + " to " + highestFloor);
+            while (!downRequests.isEmpty()) {
+                  int lowestFloor = downRequests.first();
+                  System.out.println("Elevator Moving Down from floor " + currentFloor + " to " + lowestFloor);
 
-                              while(currentFloor < highestFloor) {
-                                    moveFloorUp();
-                                    System.out.println("Elevator is in floor: " + currentFloor);
-                                    if(upRequests.contains(currentFloor)) {
-                                          upRequests.remove(currentFloor);
-                                          stopAtFloor();
-                                    } else {
-                                          waitAtFloor();
-                                    }
-                              }
-                        }
-                        if(!downRequests.isEmpty()) {
-                              state = ElevatorState.MOVING_DOWN;
-                        }else {
-                              state = ElevatorState.IDLE;
-                        }
-                  }
-
-                  else if (state == ElevatorState.MOVING_DOWN) {
-                        direction = Direction.DOWN;
-
-                        while (!downRequests.isEmpty()) {
-                              int lowestFloor = downRequests.first();
-                              System.out.println("Elevator Moving Down from floor " + currentFloor + " to " + lowestFloor);
-
-                              while(currentFloor > lowestFloor) {
-                                    moveFloorDown();
-                                    System.out.println("Elevator is in floor: " + currentFloor);
-                                    if(downRequests.contains(currentFloor)) {
-                                          downRequests.remove(currentFloor);
-                                          stopAtFloor();
-                                    } else {
-                                          waitAtFloor();
-                                    }
-                              }
-                        }
-                        if(!upRequests.isEmpty()) {
-                              state = ElevatorState.MOVING_UP;
+                  while(currentFloor > lowestFloor) {
+                        moveFloorDown();
+                        System.out.println("Elevator is in floor: " + currentFloor);
+                        if(downRequests.contains(currentFloor)) {
+                              downRequests.remove(currentFloor);
+                              stopAtFloor();
                         } else {
-                              state = ElevatorState.IDLE;
+                              downRequests.remove(lowestFloor);
+                              waitAtFloor();
                         }
                   }
+            }
+      }
+
+
+      public void processNextRequest() {
+            while(!(state instanceof IdleState) || !upRequests.isEmpty() || !downRequests.isEmpty()) {
+                  state.processRequest(this);
             }
       }
 }
